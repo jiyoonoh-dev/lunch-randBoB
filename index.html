@@ -5,22 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>오늘의 점심 랜덤뽑기 · Lunch RandBoB</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='3' y='3' width='26' height='26' rx='6' fill='%23E84F1C'/><circle cx='10' cy='10' r='2.4' fill='white'/><circle cx='22' cy='10' r='2.4' fill='white'/><circle cx='16' cy='16' r='2.4' fill='white'/><circle cx='10' cy='22' r='2.4' fill='white'/><circle cx='22' cy='22' r='2.4' fill='white'/></svg>">
-<!--
-  ┌─────────────────────────────────────────────────────────────────┐
-  │  사용 전 설정                                                     │
-  │                                                                   │
-  │  1. https://developers.kakao.com 에서 앱 생성                     │
-  │  2. [플랫폼] → [Web] 에 사용할 도메인 등록                         │
-  │     (로컬 테스트: http://localhost:8000 같은 형태로 등록)          │
-  │  3. [JavaScript 키] 를 복사해서 아래 YOUR_KAKAO_JS_KEY 자리에 붙여넣기 │
-  │  4. 카카오 디벨로퍼스 콘솔에서 "지도 / 로컬" API 사용 설정 활성화   │
-  │                                                                   │
-  │  로컬 테스트 방법:                                                 │
-  │    파일이 있는 폴더에서                                            │
-  │    > python -m http.server 8000                                  │
-  │    브라우저에서 http://localhost:8000/lunch-roulette.html        │
-  └─────────────────────────────────────────────────────────────────┘
--->
 <script type="text/javascript"
   src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7e2503b11d19c499fcc962077e60068e&libraries=services"></script>
 
@@ -219,6 +203,91 @@
     margin: 6px 0 0;
   }
 
+  /* ────── Location search ────── */
+  .search-wrap {
+    position: relative;
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  #searchInput {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s;
+  }
+  #searchInput:focus { border-color: var(--cobalt); }
+  #searchInput::placeholder { color: var(--mute); }
+  .btn-search {
+    font-family: inherit;
+    font-size: 15px;
+    padding: 0 12px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .btn-search:hover { background: #000; }
+  .btn-search:active { transform: translateY(1px); }
+
+  .search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 50;
+    box-shadow: var(--shadow);
+    display: none;
+  }
+  .search-results.show { display: block; }
+  .search-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+    transition: background .1s;
+  }
+  .search-item:last-child { border-bottom: none; }
+  .search-item:hover { background: rgba(37, 71, 208, 0.05); }
+  .search-item-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0 0 2px;
+    color: var(--ink);
+  }
+  .search-item-cat {
+    font-size: 11px;
+    color: var(--cobalt);
+    font-weight: 500;
+  }
+  .search-item-addr {
+    font-size: 12px;
+    color: var(--mute);
+    margin: 2px 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .search-item-empty {
+    padding: 14px 12px;
+    text-align: center;
+    color: var(--mute);
+    font-size: 13px;
+  }
+
   .check {
     display: flex;
     align-items: center;
@@ -235,6 +304,59 @@
     accent-color: var(--ink);
     cursor: pointer;
     margin: 0;
+  }
+
+  .step-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+  }
+  .step-action {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: transparent;
+    border: none;
+    color: var(--cobalt);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: none;
+  }
+  .step-action:hover {
+    background: rgba(37, 71, 208, 0.08);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .chip {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 11px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    cursor: pointer;
+    color: var(--mute);
+    transition: all .12s;
+    white-space: nowrap;
+  }
+  .chip:hover {
+    border-color: var(--ink-2);
+    color: var(--ink-2);
+  }
+  .chip.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .chip.active:hover {
+    background: #000;
   }
 
   /* ────── Results ────── */
@@ -436,6 +558,11 @@
 
       <div class="step">
         <div class="step-label"><span class="step-num">1</span>위치</div>
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="주소 또는 장소명 검색" autocomplete="off">
+          <button class="btn-search" id="btnSearch" aria-label="검색">🔍</button>
+          <div class="search-results" id="searchResults"></div>
+        </div>
         <div class="row">
           <button class="btn" id="btnMyLoc">📍 내 위치</button>
           <button class="btn btn-ghost" id="btnPickMode">🗺️ 지도에서 지정</button>
@@ -455,11 +582,35 @@
       </div>
 
       <div class="step">
-        <div class="step-label"><span class="step-num">3</span>제외</div>
-        <label class="check">
-          <input type="checkbox" id="excludeBar" checked>
-          <span>🍻 술집 · 요리주점</span>
-        </label>
+        <div class="step-label">
+          <span class="step-num">3</span>카테고리
+          <span class="step-actions">
+            <button class="step-action" data-preset="lunch">점심</button>
+            <button class="step-action" data-preset="all">전체</button>
+            <button class="step-action" data-preset="none">해제</button>
+          </span>
+        </div>
+        <div class="chips" id="catChips">
+          <button class="chip active" data-cat="한식">한식</button>
+          <button class="chip active" data-cat="중식">중식</button>
+          <button class="chip active" data-cat="일식">일식</button>
+          <button class="chip active" data-cat="양식">양식</button>
+          <button class="chip active" data-cat="분식">분식</button>
+          <button class="chip active" data-cat="치킨">치킨</button>
+          <button class="chip active" data-cat="피자">피자</button>
+          <button class="chip active" data-cat="패스트푸드">패스트푸드</button>
+          <button class="chip active" data-cat="뷔페">뷔페</button>
+          <button class="chip active" data-cat="도시락">도시락</button>
+          <button class="chip active" data-cat="죽">죽</button>
+          <button class="chip active" data-cat="샐러드">샐러드</button>
+          <button class="chip active" data-cat="샤브샤브">샤브샤브</button>
+          <button class="chip active" data-cat="퓨전요리">퓨전요리</button>
+          <button class="chip active" data-cat="세계음식">세계음식</button>
+          <button class="chip active" data-cat="패밀리레스토랑">패밀리레스토랑</button>
+          <button class="chip active" data-cat="기타">기타</button>
+          <button class="chip" data-cat="술집">술집</button>
+          <button class="chip" data-cat="요리주점">요리주점</button>
+        </div>
       </div>
 
       <button class="cta" id="btnPick">
@@ -486,8 +637,24 @@
   let map, ps;
   let currentPos = null;          // {lat, lng}
   let radius = 150;               // meters
-  let excludeBar = true;          // 술집·요리주점 제외 여부
   let pickMode = false;           // map click → set position
+
+  // 카테고리 정의
+  const KNOWN_CATEGORIES = [
+    '한식', '중식', '일식', '양식', '분식',
+    '치킨', '피자', '패스트푸드',
+    '뷔페', '도시락', '죽', '샐러드', '샤브샤브',
+    '퓨전요리', '세계음식', '패밀리레스토랑',
+    '술집', '요리주점'
+  ];
+  const DRINKING = ['술집', '요리주점'];
+  const LUNCH_PRESET = new Set([
+    ...KNOWN_CATEGORIES.filter(c => !DRINKING.includes(c)),
+    '기타'
+  ]);
+  const ALL_PRESET = new Set([...KNOWN_CATEGORIES, '기타']);
+
+  let activeCategories = new Set(LUNCH_PRESET);
   let centerMarker = null;
   let radiusCircle = null;
   let resultMarkers = [];
@@ -498,11 +665,14 @@
   const btnPickMode = $('btnPickMode');
   const btnPick = $('btnPick');
   const radiusBtns = $('radiusBtns');
-  const excludeBarChk = $('excludeBar');
+  const catChips = $('catChips');
   const locHint = $('locHint');
   const mapHint = $('mapHint');
   const results = $('results');
   const toast = $('toast');
+  const searchInput = $('searchInput');
+  const btnSearch = $('btnSearch');
+  const searchResults = $('searchResults');
 
   // ─── Init Kakao Map ──────────────────────────────────────────
   if (typeof kakao === 'undefined' || !kakao.maps) {
@@ -511,7 +681,7 @@
   }
 
   kakao.maps.load(function () {
-    // 기본 위치: 강남 (geolocation 실패 시 fallback)
+    // 기본 위치: 강남역 (geolocation 실패 시 fallback)
     const defaultCenter = new kakao.maps.LatLng(37.4979, 127.0276);
 
     map = new kakao.maps.Map($('map'), {
@@ -615,8 +785,95 @@
     drawRadiusCircle();
   });
 
-  excludeBarChk.addEventListener('change', (e) => {
-    excludeBar = e.target.checked;
+  // 칩 개별 토글
+  catChips.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    const cat = chip.dataset.cat;
+    if (activeCategories.has(cat)) {
+      activeCategories.delete(cat);
+      chip.classList.remove('active');
+    } else {
+      activeCategories.add(cat);
+      chip.classList.add('active');
+    }
+  });
+
+  // 프리셋 버튼 (점심 / 전체 / 해제)
+  document.querySelectorAll('[data-preset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = btn.dataset.preset;
+      let target;
+      if (preset === 'all')       target = new Set(ALL_PRESET);
+      else if (preset === 'none') target = new Set();
+      else                        target = new Set(LUNCH_PRESET);  // 'lunch'
+      activeCategories = target;
+      catChips.querySelectorAll('.chip').forEach(c => {
+        c.classList.toggle('active', target.has(c.dataset.cat));
+      });
+    });
+  });
+
+  // ─── Location search ────────────────────────────────────────
+  function doSearch() {
+    const q = searchInput.value.trim();
+    if (!q) return;
+
+    ps.keywordSearch(q, (data, status) => {
+      if (status === kakao.maps.services.Status.ZERO_RESULT) {
+        searchResults.innerHTML = '<div class="search-item-empty">검색 결과가 없습니다</div>';
+        searchResults.classList.add('show');
+        return;
+      }
+      if (status !== kakao.maps.services.Status.OK) {
+        showToast('검색 실패 (status: ' + status + ')', true);
+        return;
+      }
+      renderSearchResults(data.slice(0, 10));
+    });
+  }
+
+  function renderSearchResults(items) {
+    searchResults.innerHTML = items.map((p, i) => `
+      <div class="search-item" data-idx="${i}">
+        <p class="search-item-name">
+          ${escapeHTML(p.place_name)}
+          <span class="search-item-cat">${escapeHTML(shortCategory(p.category_name))}</span>
+        </p>
+        <p class="search-item-addr">${escapeHTML(p.road_address_name || p.address_name || '')}</p>
+      </div>
+    `).join('');
+    searchResults.classList.add('show');
+
+    searchResults.querySelectorAll('.search-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.idx, 10);
+        const p = items[idx];
+        setCurrentPos(parseFloat(p.y), parseFloat(p.x), p.place_name);
+        searchResults.classList.remove('show');
+        searchInput.value = p.place_name;
+      });
+    });
+  }
+
+  btnSearch.addEventListener('click', doSearch);
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      doSearch();
+    } else if (e.key === 'Escape') {
+      searchResults.classList.remove('show');
+    }
+  });
+  // 검색창 비우면 결과 닫기
+  searchInput.addEventListener('input', () => {
+    if (!searchInput.value.trim()) searchResults.classList.remove('show');
+  });
+  // 바깥 클릭 시 드롭다운 닫기
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) {
+      searchResults.classList.remove('show');
+    }
   });
 
   btnPick.addEventListener('click', pickRestaurants);
@@ -635,18 +892,18 @@
     try {
       const all = await fetchAllRestaurants();
 
-      // 술집·요리주점 필터링
-      const pool = excludeBar
-        ? all.filter(p => {
-            const cat = p.category_name || '';
-            return !cat.includes('술집') && !cat.includes('주점');
-          })
-        : all;
+      // 활성화된 카테고리에 속하는 곳만 필터
+      const pool = all.filter(p => activeCategories.has(getMainCategory(p.category_name)));
 
       if (pool.length === 0) {
-        const reason = all.length > 0
-          ? `반경 ${formatRadius(radius)} 안에 점심 가능한 음식점이 없어요<br>(${all.length}곳 모두 술집·주점)`
-          : `반경 ${formatRadius(radius)} 안에 음식점이 없어요<br>반경을 늘려보세요`;
+        let reason;
+        if (all.length === 0) {
+          reason = `반경 ${formatRadius(radius)} 안에 음식점이 없어요<br>반경을 늘려보세요`;
+        } else if (activeCategories.size === 0) {
+          reason = `카테고리를 하나 이상 선택해주세요`;
+        } else {
+          reason = `반경 ${formatRadius(radius)} 안에 ${all.length}곳 있지만<br>선택한 카테고리에 해당하는 곳이 없어요`;
+        }
         results.innerHTML = `
           <div class="empty">
             <div class="big">🥲</div>
@@ -714,8 +971,8 @@
       `반경 ${formatRadius(radius)}`,
       `${poolCount}곳 중 ${picked.length}곳`,
     ];
-    if (excludeBar && excluded > 0) {
-      metaParts.push(`술집·주점 ${excluded}곳 제외`);
+    if (excluded > 0) {
+      metaParts.push(`카테고리 외 ${excluded}곳 제외`);
     }
     const html = [
       `<div class="results-header">
@@ -803,6 +1060,19 @@
     const parts = s.split('>').map(x => x.trim());
     // "음식점 > 한식 > 칼국수" → "한식 · 칼국수"
     return parts.slice(1).join(' · ') || parts[0];
+  }
+
+  /**
+   * 필터링용 메인 카테고리 추출.
+   * "음식점 > 한식 > 국밥" → "한식"
+   * "음식점 > 술집 > 호프" → "술집"
+   * 알려진 카테고리가 아니면 "기타"
+   */
+  function getMainCategory(name) {
+    if (!name) return '기타';
+    const parts = name.split('>').map(s => s.trim());
+    const main = parts[1] || parts[0];
+    return KNOWN_CATEGORIES.includes(main) ? main : '기타';
   }
 
   function formatDistance(d) {
