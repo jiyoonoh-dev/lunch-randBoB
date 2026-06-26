@@ -511,8 +511,8 @@
   }
 
   kakao.maps.load(function () {
-    // 기본 위치: 인천 시청 (geolocation 실패 시 fallback)
-    const defaultCenter = new kakao.maps.LatLng(37.4563, 126.7052);
+    // 기본 위치: 강남 (geolocation 실패 시 fallback)
+    const defaultCenter = new kakao.maps.LatLng(37.4979, 127.0276);
 
     map = new kakao.maps.Map($('map'), {
       center: defaultCenter,
@@ -537,7 +537,7 @@
   function tryGeolocation() {
     if (!navigator.geolocation) {
       locHint.textContent = '브라우저가 위치 정보를 지원하지 않습니다';
-      setCurrentPos(37.4563, 126.7052, '인천 시청 (기본값)');
+      setCurrentPos(37.4979, 127.0276, '강남역 (기본값)');
       return;
     }
     locHint.textContent = '현재 위치 확인 중…';
@@ -548,7 +548,7 @@
       (err) => {
         console.warn('Geolocation failed:', err);
         locHint.textContent = '위치 권한이 거부됨. 지도를 클릭해 지정하세요.';
-        setCurrentPos(37.4563, 126.7052, '인천 시청 (기본값)');
+        setCurrentPos(37.4979, 127.0276, '강남역 (기본값)');
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
     );
